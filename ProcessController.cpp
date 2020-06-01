@@ -11,6 +11,7 @@
 #include <iostream>
 #include <sstream>
 #include <list>
+#include <algorithm>
 
 namespace ECE17 {
 
@@ -94,12 +95,58 @@ namespace ECE17 {
                                           std::string &anInput) {
       word_col.clear();
       count_col.clear();
+      std::vector<std::string> wordUse;
+      std::vector<int> wordCount;
+      std::vector<std::string>::iterator word_it = wordUse.begin();
+      //std::vector<int>::iterator count_it = wordCount.begin();
+      int index = 0;
+      std::string word;
+      std::istringstream s(anInput);
+
+      while (s >> word) {
+          removePunct(word);
+          word_it = std::find(wordUse.begin(), wordUse.end(), word);
+          if (word_it == wordUse.end()) {
+              wordUse.push_back(word);
+              wordCount.push_back(1);
+          } else {
+              index = word_it - wordUse.begin();
+              wordCount[index]++;
+          }
+      }
+      std::copy(wordUse.begin(), wordUse.end(), std::back_inserter(word_col));
+      std::copy(wordCount.begin(), wordCount.end(), std::back_inserter(count_col));
     }
 
     void ProcessController::calcWordPairs(std::list<std::string> &word_pairs_col, std::list<int> &count_col,
                                           std::string &anInput) {
       word_pairs_col.clear();
       count_col.clear();
+      std::vector<std::string> wordUse;
+      std::vector<int> wordCount;
+      std::vector<std::string>::iterator word_it = wordUse.begin();
+      int index = 0;
+      std::string word1, word2, phrase;
+      std::istringstream s(anInput);
+      s >> word1;
+
+      while (s >> word2) {
+          phrase.clear();
+          phrase.append(word1);
+          phrase.append(" " + word2);
+          word_it = std::find(wordUse.begin(), wordUse.end(), phrase);
+          if (word_it == wordUse.end()) {
+              wordUse.push_back(phrase);
+              wordCount.push_back(1);
+          } else {
+              index = word_it - wordUse.begin();
+              wordCount[index]++;
+          }
+          word1 = word2;
+      }
+
+      std::copy(wordUse.begin(), wordUse.end(), std::back_inserter(word_pairs_col));
+      std::copy(wordCount.begin(), wordCount.end(), std::back_inserter(count_col));
     }
 
     //output your compressed version input the anOutput stream...
