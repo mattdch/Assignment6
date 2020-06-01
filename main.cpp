@@ -83,7 +83,7 @@ int main(int argc, const char * argv[]) {
   std::string theFinalStr(theDecompressedOutput.str());
   size_t theDecompLength = theFinalStr.length();
 
-  //std::cout << "decompressed:\n" << theDecompressedOutput.str() << "\n";
+  std::cout << "decompressed:\n" << theDecompressedOutput.str() << "\n";
 
   theTimer.stop();
   theOutput << "\nElapsed time: " << theTimer.elapsed() << "\n";

@@ -34,16 +34,20 @@ namespace ECE17 {
       }
     }
 
+    void removeUniqueWords(std::list<std::string> &word_col, std::list<int> &count_col);
+
     ProcessController::ProcessController() {
       //don't forget to initialze your data members...
     }
 
     ProcessController::ProcessController(const ProcessController &aCopy) {
       //ocf requirement
+      dict = aCopy.dict;
     }
 
     ProcessController::~ProcessController() {
       //dont forget me!
+      delete &dict;
     }
 
     ProcessController &ProcessController::operator=(const ProcessController &aCopy) {
@@ -147,20 +151,101 @@ namespace ECE17 {
 
       std::copy(wordUse.begin(), wordUse.end(), std::back_inserter(word_pairs_col));
       std::copy(wordCount.begin(), wordCount.end(), std::back_inserter(count_col));
+
+      std::list<int>::iterator count_it = count_col.begin();
+      std::list<std::string>::iterator word_list_it = word_pairs_col.begin();
+      while (count_it != count_col.end()) {
+          if (*count_it == 1) {
+              count_it = count_col.erase(count_it);
+              word_list_it = word_pairs_col.erase(word_list_it);
+          } else {
+              ++count_it;
+              ++word_list_it;
+          }
+      }
+    }
+
+    void removeUniqueWords(std::list<std::string> &word_col, std::list<int> &count_col) {
+        std::list<int>::iterator count_it = count_col.begin();
+        std::list<std::string>::iterator word_list_it = word_col.begin();
+        while (count_it != count_col.end()) {
+            if (*count_it == 1) {
+                count_it = count_col.erase(count_it);
+                word_list_it = word_col.erase(word_list_it);
+            } else {
+                ++count_it;
+                ++word_list_it;
+            }
+        }
+    }
+
+    bool isMatchWord(const ProcessController::dict_pair &pair, const std::string &val) {
+        return val == pair.word;
+    }
+
+    bool isMatchKey(const ProcessController::dict_pair &pair, const std::string &val) {
+        if (val[0] < 48 || val[0] > 57)
+            return false;
+        std::stringstream com(val);
+        int i;
+        com >> i;
+        return i == pair.key;
     }
 
     //output your compressed version input the anOutput stream...
+    // Refer to compression_algorithm.md for more info.
     bool ProcessController::compress(std::string &anInput, std::ostream &anOutput) {
-      //STUDENT: implement this method...
-      anOutput << anInput;
+      std::list<std::string> words;
+      std::list<int> counts;
+      calcWordUsage(words, counts, anInput);
+      removeUniqueWords(words, counts);
+
+      // creating dictionary
+      int i = 0;
+      dict_pair pair;
+      for (std::string w : words) {
+          pair.word = w;
+          pair.key = i;
+          dict.push_back(pair);
+          i++;
+      }
+
+      // encoding input stream
+      // TODO: include \n characters
+      std::string mWord, oWord; // m = match (to be matched), o = original
+      std::istringstream input(anInput);
+      auto it = dict.begin(); // iterator for searching object dictionary
+      while (input >> oWord) {
+          mWord = oWord;
+          removePunct(mWord); // strip punctuation for comparison
+          for (auto &d : dict) {
+              if (isMatchWord(d,mWord)) { // Match word, replace with key
+                  oWord.replace(0, mWord.size(), std::to_string(d.key)); // if matched, replace only the word and not punctuation
+              }
+          }
+          anOutput << oWord + " ";
+      }
+
       return true;
     }
 
     //de-compress given string back to original form, and write it out to anOutput...
     bool ProcessController::decompress(std::string &aBuffer, std::ostream &anOutput) {
-      //STUDENT: implement this method...
-      anOutput << aBuffer;
+        std::string mWord, oWord; // m = match (to be matched), o = original
+        std::istringstream input(aBuffer); // convert string to stream
+        auto it = dict.begin(); // iterator for dictionary
+        while (input >> oWord) {
+            mWord = oWord;
+            removePunct(mWord); // strip punctuation for comparison
+            for (auto &d : dict) {
+                if (isMatchKey(d,mWord)) { // Match key, replace with word
+                    oWord.replace(0, mWord.size(), d.word); // if matched, replace only the key and not punctuation
+                }
+            }
+            anOutput << oWord + " ";
+        }
       return true;
     }
+
 
 }

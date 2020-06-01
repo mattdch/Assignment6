@@ -37,6 +37,10 @@ namespace ECE17 {
     
     bool compress(std::string &anInput, std::ostream &anOutput);
     bool decompress(std::string &anInput, std::ostream &anOutput);
+    struct dict_pair {
+        int key;
+        std::string word;
+    };
     
   protected:
     void showWordUsage(std::string &anInput, std::ostream &anOutput);
@@ -46,8 +50,7 @@ namespace ECE17 {
                     std::list<std::string> &col1, std::list<int> &col2,
                     std::ostream &anOutput);
 
-
-    //what data structures make sense to you? Add all you want! :)
+    std::vector<dict_pair> dict; // stores the dictionary which contains word and key pairs for substitution
     
   };
 
